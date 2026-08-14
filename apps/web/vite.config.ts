@@ -14,7 +14,7 @@ setVersion("web");
 setBuildVersion("web");
 
 export default mergeConfig(baseConfig(), {
-	plugins: [!noMkCert && mkcert(), react()],
+	plugins: [react()],
 	publicDir: "../../core/public",
 	server: {
 		hmr: { protocol: "wss", host: "localhost", clientPort: 5173, port: 5173 },
