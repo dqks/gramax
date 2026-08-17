@@ -13,9 +13,20 @@ export const getNoteAttributes = (node: Node) => {
 };
 
 const noteFormatter: NodeSerializerSpec = async (state, node) => {
-	state.write(`${XmlFormatter.openTag("note", getNoteAttributes(node))}\n\n`);
-	await state.renderContent(getNoteBody(node));
-	state.write(XmlFormatter.closeTag("note"));
+	// state.write(`${XmlFormatter.openTag("note", getNoteAttributes(node))}\n\n`);
+	// await state.renderContent(getNoteBody(node));
+	// state.write(XmlFormatter.closeTag("note"));
+	// state.closeBlock(node);
+
+	state.write(`${XmlFormatter.openTag("note", getNoteAttributes(node))}`);
+	const body = getNoteBody(node);
+
+	if (body.content.size > 0) {
+		state.write('\n');
+		await state.renderContent(body);
+	}
+
+	state.write(XmlFormatter.closeTag("note"), 0);
 	state.closeBlock(node);
 };
 

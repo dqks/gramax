@@ -156,8 +156,8 @@ export class MarkdownSerializerState {
 	/// Prepare the state for writing output (closing closed paragraphs,
 	/// adding delimiters, and so on), and then optionally add content
 	/// (unescaped) to the output.
-	write(content?: string) {
-		this.flushClose();
+	write(content?: string, flushSize: number = 2) {
+		this.flushClose(flushSize);
 		if (this.delim && this.atBlank()) this.out += this.delim;
 		if (content) this.out += content;
 	}
