@@ -431,6 +431,29 @@ const splitTableRow = (line: string) => {
 };
 
 export const formatTable = (table: string, delim: string) => {
+	// const newTable = new MdParser().backParse(table);
+	// const lines = newTable.trim().split("\n");
+
+	// const headers = splitTableRow(lines[0]);
+	// const dataLines = lines.slice(2);
+	// const data = dataLines.map(splitTableRow);
+
+	// const columnWidths = headers.map((header, index) => {
+	// 	return Math.max(1, header.length, ...data.map((row) => row[index]?.length || 0));
+	// });
+
+	// const formattedHeaders = headers.map((header, index) => header.padEnd(columnWidths[index])).join(" | ");
+
+	// const separator = columnWidths.map((width) => "-".repeat(width)).join("-|-");
+
+	// const formattedRows = data.map((row) => {
+	// 	return row.map((cell, index) => (cell || "").padEnd(columnWidths[index])).join(" | ");
+	// });
+
+	// const formattedTable =
+	// 	`| ${formattedHeaders} |\n${delim}|-${separator}-|\n` +
+	// 	formattedRows.map((row) => `${delim}| ${row} |`).join("\n");
+	// return formattedTable;
 	const newTable = new MdParser().backParse(table);
 	const lines = newTable.trim().split("\n");
 
@@ -438,20 +461,18 @@ export const formatTable = (table: string, delim: string) => {
 	const dataLines = lines.slice(2);
 	const data = dataLines.map(splitTableRow);
 
-	const columnWidths = headers.map((header, index) => {
-		return Math.max(1, header.length, ...data.map((row) => row[index]?.length || 0));
-	});
+	const formattedHeaders = headers.join(" | ");
 
-	const formattedHeaders = headers.map((header, index) => header.padEnd(columnWidths[index])).join(" | ");
-
-	const separator = columnWidths.map((width) => "-".repeat(width)).join("-|-");
+	const separator = headers.map((header, index) => {
+		return '---';
+	}).join('|');
 
 	const formattedRows = data.map((row) => {
-		return row.map((cell, index) => (cell || "").padEnd(columnWidths[index])).join(" | ");
+		return row.join(" | ");
 	});
 
 	const formattedTable =
-		`| ${formattedHeaders} |\n${delim}|-${separator}-|\n` +
+		`| ${formattedHeaders} |\n${delim}|${separator}|\n` +
 		formattedRows.map((row) => `${delim}| ${row} |`).join("\n");
 	return formattedTable;
 };
