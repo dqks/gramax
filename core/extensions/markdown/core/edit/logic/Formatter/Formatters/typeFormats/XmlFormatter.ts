@@ -6,7 +6,7 @@ import tableRowFormatter from "@ext/markdown/elements/table/edit/logic/formatter
 import screenSymbols from "@ext/markdown/logic/screenSymbols";
 
 type expextedValueType = string | string[];
-const angleTag = { OPEN: "<", CLOSE: ">", SELF_CLOSE: "/>" };
+const angleTag = { OPEN: "<", CLOSE: ">", SELF_CLOSE: " />" };
 
 const processValue = (value: expextedValueType) => {
 	return screenSymbols(Array.isArray(value) ? JSON.stringify(value) : value);
