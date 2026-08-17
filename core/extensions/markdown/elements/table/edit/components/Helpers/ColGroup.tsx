@@ -1,8 +1,7 @@
 import ArticleRefService from "@core-ui/ContextServices/ArticleRef";
 import useWatch from "@core-ui/hooks/useWatch";
-import parsePixels from "@core-ui/utils/parsePixels";
 import type { Node } from "@tiptap/pm/model";
-import { memo, type RefObject, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { memo, type RefObject, useLayoutEffect, useMemo, useState } from "react";
 
 interface ColGroupProps {
 	content?: Node;
@@ -20,7 +19,6 @@ export interface ColInfo {
 }
 
 const TABLE_WRAPPER_PADDINGS = 48; //1.5em + 1.5em
-const TABLE_WIDTH_PROPERTY = "--table-width";
 
 const getColInfo = (colCount?: number) => {
 	const colInfo: ColInfo[] = [];
@@ -32,7 +30,6 @@ const getColInfo = (colCount?: number) => {
 
 const ColGroup = ({ content, parentElement, tableRef, init }: ColGroupProps) => {
 	const articleRef = ArticleRefService.value;
-	const colgroupRef = useRef<HTMLTableColElement>(null);
 	const [colInfo, setColInfo] = useState<ColInfo[]>(init?.colInfo || getColInfo(init?.colCount));
 
 	const getCellWidthFromParent = () => {
@@ -45,7 +42,21 @@ const ColGroup = ({ content, parentElement, tableRef, init }: ColGroupProps) => 
 	const calculateCellWidth = (cols: ColInfo[]): number => {
 		if (cols.length === 0) return null;
 
-		if (cols.some((col) => col.colwidth?.[0])) return null;
+		let totalExplicitWidth = 0;
+		let autoColCount = 0;
+
+		for (const col of cols) {
+			for (let j = 0; j < col.colspan; j++) {
+				const width = col.colwidth?.[j];
+				if (width && Number(width) > 0) {
+					totalExplicitWidth += Number(width);
+				} else {
+					autoColCount++;
+				}
+			}
+		}
+
+		if (autoColCount === 0) return null;
 
 		const maxWidth = parentElement
 			? getCellWidthFromParent()
@@ -53,8 +64,10 @@ const ColGroup = ({ content, parentElement, tableRef, init }: ColGroupProps) => 
 
 		if (!maxWidth) return null;
 
-		const totalColspan = cols.reduce((sum, col) => sum + col.colspan, 0);
-		return maxWidth / totalColspan;
+		const availableWidth = maxWidth - totalExplicitWidth;
+		if (availableWidth <= 0) return null;
+
+		return Math.max(50, availableWidth / autoColCount);
 	};
 
 	const getCellWidthFrominitProps = () => (init?.colCount ? calculateCellWidth(colInfo) : null);
@@ -140,12 +153,12 @@ const ColGroup = ({ content, parentElement, tableRef, init }: ColGroupProps) => 
 		colInfo.forEach((col, i) => {
 			for (let j = 0; j < col.colspan; j++) {
 				const colwidth = col.colwidth?.[j];
-				const width = cellWidth || colwidth;
+				const hasExplicitWidth = colwidth && Number(colwidth) > 0;
+				const width = hasExplicitWidth ? colwidth : cellWidth;
 
-				if (width) {
+				if (width && Number(width) > 0) {
 					cols.push(
 						<col
-							// biome-ignore lint/suspicious/noArrayIndexKey: expected
 							key={`${i}-${j}-${width}`}
 							style={{
 								minWidth: `${typeof width === "number" ? `${width}px` : width}`,
@@ -153,65 +166,25 @@ const ColGroup = ({ content, parentElement, tableRef, init }: ColGroupProps) => 
 							}}
 						/>,
 					);
-				} else
-					cols.push(
-						<col
-							// biome-ignore lint/suspicious/noArrayIndexKey: expected
-							key={`${i}-${j}`}
-						/>,
-					);
+				} else {
+					cols.push(<col key={`${i}-${j}`} />);
+				}
 			}
 		});
 
 		return cols;
 	}, [colInfo, cellWidth]);
 
-	// Safari doesn't recalculate the intrinsic width of a table when the columns change after the
-	// first layout, so a max-content table keeps the widths it got from the cell content. Sizing the
-	// table by the sum of its columns makes the layout the same in every browser. Columns are written
-	// both by this component and by the resizer, so the sum is read from the dom.
-	useLayoutEffect(() => {
-		const colgroup = colgroupRef.current;
-		const table = colgroup?.parentElement;
-		if (!table) return;
-
-		const getTableWidth = () => {
-			let total = 0;
-
-			for (const col of Array.from(colgroup.children) as HTMLElement[]) {
-				const width = parsePixels(col.style.width);
-				if (!width) return null;
-				total += width;
-			}
-
-			return total || null;
-		};
-
-		const syncTableWidth = () => {
-			const tableWidth = getTableWidth();
-
-			if (tableWidth) table.style.setProperty(TABLE_WIDTH_PROPERTY, `${tableWidth}px`);
-			else table.style.removeProperty(TABLE_WIDTH_PROPERTY);
-		};
-
-		syncTableWidth();
-
-		const observer = new MutationObserver(syncTableWidth);
-		observer.observe(colgroup, { attributeFilter: ["style"], childList: true, subtree: true });
-
-		return () => observer.disconnect();
-	}, []);
-
 	return (
 		<>
-			<colgroup ref={colgroupRef}>{generatedCols}</colgroup>
+			<colgroup>{generatedCols}</colgroup>
 			<thead contentEditable="false" style={{ userSelect: "none" }} suppressContentEditableWarning>
-				<tr style={{ visibility: "hidden" }}>
-					{generatedCols.map((_, i) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey:  just need a row with cells in order to know the column width in safari
-						<td contentEditable="false" key={i} style={{ height: "0px", padding: "0", border: "none" }} />
-					))}
-				</tr>
+			<tr style={{ visibility: "hidden" }}>
+				{generatedCols.map((_, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey:  just need a row with cells in order to know the column width in safari
+					<td contentEditable="false" key={i} style={{ height: "0px", padding: "0", border: "none" }} />
+				))}
+			</tr>
 			</thead>
 		</>
 	);

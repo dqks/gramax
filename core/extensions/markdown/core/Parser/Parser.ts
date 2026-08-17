@@ -54,6 +54,7 @@ import MdParser from "./MdParser/MdParser";
 import type ParserContext from "./ParserContext/ParserContext";
 import preTransformTokens from "./Transformer/preTransformTokens";
 import { dedentContainerContent, getContainerTags } from "@ext/markdown/core/Parser/dedentContainerContent";
+import { tableWidthNodeTransformer } from "@ext/markdown/elements/table/logic/tableWidthNodeTransformer";
 
 const katexPlugin = import("@traptitech/markdown-it-katex");
 let resolvedKatexPlugin: Awaited<typeof katexPlugin>["default"] = null;
@@ -219,6 +220,7 @@ export default class MarkdownParser {
 			unsupportedNodeTransformer,
 			inlineNodeTransformers,
 			tableNodeTransform,
+			tableWidthNodeTransformer
 		];
 
 		const tokenTransformers: TokenTransformerFunc[] = [

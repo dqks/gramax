@@ -30,6 +30,7 @@ const tableCell: NodeSpec = {
 		align: { default: null },
 		filter: { default: null },
 		sort: { default: null },
+		isCustomWidth: { default: false }
 	},
 };
 

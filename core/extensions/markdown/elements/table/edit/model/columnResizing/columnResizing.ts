@@ -1,3 +1,4 @@
+import { DATA_QA_LIGHTBOX as LIGHTBOX_DATA_QA } from "@components/Atoms/Image/modalImage/MediaPreview";
 import stopOpeningPanels from "@core-ui/utils/stopOpeningPanels ";
 import type { CellAttrs } from "@ext/markdown/elements/table/edit/model/columnResizing/CellAttrs";
 import { updateColumnsOnResize } from "@ext/markdown/elements/table/edit/model/columnResizing/updateColumns";
@@ -32,29 +33,33 @@ export function columnResizing({
 	const plugin = new Plugin<ResizeState>({
 		key: columnResizingPluginKey,
 		state: {
-			init(_, state) {
+			init(_,
+				state) {
 				plugin.spec.props.nodeViews[tableNodeTypes(state.schema).table.name] = (node) =>
 					new View(node, cellMinWidth);
 				return new ResizeState(-1, false);
 			},
-			apply(tr, prev) {
+			apply(tr,
+				prev) {
 				return prev.apply(tr);
 			},
 		},
 		props: {
 			attributes: (state): Record<string, string> => {
 				const pluginState = columnResizingPluginKey.getState(state);
-				return pluginState && pluginState.activeHandle > -1 ? { class: "resize-cursor" } : {};
+				return pluginState && pluginState.activeHandle > -1 ? {class: "resize-cursor"} : {};
 			},
 
 			handleDOMEvents: {
-				mousemove: (view, event) => {
+				mousemove: (view,
+					event) => {
 					handleMouseMove(view, event, handleWidth, lastColumnResizable);
 				},
 				mouseleave: (view) => {
 					handleMouseLeave(view);
 				},
-				mousedown: (view, event) => {
+				mousedown: (view,
+					event) => {
 					handleMouseDown(view, event, cellMinWidth);
 				},
 			},
@@ -72,7 +77,10 @@ export function columnResizing({
 	return plugin;
 }
 
-function handleMouseMove(view: EditorView, event: MouseEvent, handleWidth: number, lastColumnResizable: boolean): void {
+function handleMouseMove(view: EditorView,
+	event: MouseEvent,
+	handleWidth: number,
+	lastColumnResizable: boolean): void {
 	const pluginState = columnResizingPluginKey.getState(view.state);
 	if (!pluginState) return;
 
@@ -80,7 +88,7 @@ function handleMouseMove(view: EditorView, event: MouseEvent, handleWidth: numbe
 		const target = domCellAround(event.target as HTMLElement);
 		let cell = -1;
 		if (target) {
-			const { left, right } = target.getBoundingClientRect();
+			const {left, right} = target.getBoundingClientRect();
 			if (event.clientX - left <= handleWidth) cell = edgeCell(view, event, "left", handleWidth);
 			else if (right - event.clientX <= handleWidth) cell = edgeCell(view, event, "right", handleWidth);
 		}
@@ -108,7 +116,9 @@ function handleMouseLeave(view: EditorView): void {
 	if (pluginState && pluginState.activeHandle > -1 && !pluginState.dragging) updateHandle(view, -1);
 }
 
-function handleMouseDown(view: EditorView, event: MouseEvent, cellMinWidth: number): boolean {
+function handleMouseDown(view: EditorView,
+	event: MouseEvent,
+	cellMinWidth: number): boolean {
 	const win = view.dom.ownerDocument.defaultView ?? window;
 	const pluginState = columnResizingPluginKey.getState(view.state);
 	if (!pluginState || pluginState.activeHandle === -1 || pluginState.dragging) return false;
@@ -118,7 +128,7 @@ function handleMouseDown(view: EditorView, event: MouseEvent, cellMinWidth: numb
 	const width = currentColWidth(view, pluginState.activeHandle, cell.attrs);
 	view.dispatch(
 		view.state.tr.setMeta(columnResizingPluginKey, {
-			setDragging: { startX: event.clientX, startWidth: width },
+			setDragging: {startX: event.clientX, startWidth: width},
 		}),
 	);
 
@@ -128,7 +138,7 @@ function handleMouseDown(view: EditorView, event: MouseEvent, cellMinWidth: numb
 		const pluginState = columnResizingPluginKey.getState(view.state);
 		if (pluginState?.dragging) {
 			updateColumnWidth(view, pluginState.activeHandle, draggedWidth(pluginState.dragging, event, cellMinWidth));
-			view.dispatch(view.state.tr.setMeta(columnResizingPluginKey, { setDragging: null }));
+			view.dispatch(view.state.tr.setMeta(columnResizingPluginKey, {setDragging: null}));
 		}
 	}
 
@@ -152,7 +162,9 @@ function handleMouseDown(view: EditorView, event: MouseEvent, cellMinWidth: numb
 	return true;
 }
 
-function currentColWidth(view: EditorView, cellPos: number, { colspan, colwidth }: Attrs): number {
+function currentColWidth(view: EditorView,
+	cellPos: number,
+	{colspan, colwidth}: Attrs): number {
 	const width = colwidth?.[colwidth.length - 1];
 	if (width) return width;
 	const dom = view.domAtPos(cellPos);
@@ -171,12 +183,16 @@ function currentColWidth(view: EditorView, cellPos: number, { colspan, colwidth 
 function domCellAround(target: HTMLElement | null): HTMLElement | null {
 	let newTarget = target;
 	while (newTarget && newTarget.nodeName !== "TD" && newTarget.nodeName !== "TH") {
+		if (newTarget.dataset.qa === LIGHTBOX_DATA_QA) return null;
 		newTarget = newTarget.classList?.contains("ProseMirror") ? null : (newTarget.parentNode as HTMLElement);
 	}
 	return newTarget;
 }
 
-function edgeCell(view: EditorView, event: MouseEvent, side: "left" | "right", handleWidth: number): number {
+function edgeCell(view: EditorView,
+	event: MouseEvent,
+	side: "left" | "right",
+	handleWidth: number): number {
 	// posAtCoords returns inconsistent positions when cursor is moving
 	// across a collapsed table border. Use an offset to adjust the
 	// target viewport coordinates away from the table border.
@@ -186,7 +202,7 @@ function edgeCell(view: EditorView, event: MouseEvent, side: "left" | "right", h
 		top: event.clientY,
 	});
 	if (!found) return -1;
-	const { pos } = found;
+	const {pos} = found;
 	const Cell = cellAround(view.state.doc.resolve(pos));
 	if (!Cell) return -1;
 	if (side === "right") return Cell.pos;
@@ -196,20 +212,28 @@ function edgeCell(view: EditorView, event: MouseEvent, side: "left" | "right", h
 	return index % map.width === 0 ? -1 : start + map.map[index - 1];
 }
 
-function draggedWidth(dragging: Dragging, event: MouseEvent, cellMinWidth: number): number {
+function draggedWidth(dragging: Dragging,
+	event: MouseEvent,
+	cellMinWidth: number): number {
 	const offset = event.clientX - dragging.startX;
 	return Math.max(cellMinWidth, dragging.startWidth + offset);
 }
 
-function updateHandle(view: EditorView, value: number): void {
-	view.dispatch(view.state.tr.setMeta(columnResizingPluginKey, { setHandle: value }));
+function updateHandle(view: EditorView,
+	value: number): void {
+	view.dispatch(view.state.tr.setMeta(columnResizingPluginKey, {setHandle: value}));
 }
 
-function updateColumnWidth(view: EditorView, cell: number, width: number): void {
+function updateColumnWidth(view: EditorView,
+	cell: number,
+	width: number): void {
 	const Cell = view.state.doc.resolve(cell);
 	const table = Cell.node(-1),
 		map = TableMap.get(table),
 		start = Cell.start(-1);
+
+	const col = map.colCount(Cell.pos - start) + Cell.nodeAfter.attrs.colspan - 1;
+	const tr = view.state.tr;
 
 	let dom: Node | null = view.domAtPos(Cell.start(-1)).node;
 	while (dom && dom.nodeName !== "TABLE") {
@@ -220,43 +244,55 @@ function updateColumnWidth(view: EditorView, cell: number, width: number): void 
 	const cols = Array.from((dom.firstChild as HTMLElement).children) as HTMLTableColElement[];
 	const thead = dom.childNodes?.[1] as HTMLTableSectionElement | null;
 
-	const widths = cols.map((col: HTMLTableColElement, index) => {
+	const domWidths = cols.map((col,
+		index) => {
 		const styleWidth = col.style.width ? parseFloat(col.style.width) : 0;
 		const rectWidth = col.getBoundingClientRect().width;
-
-		const fallbackWidth: number =
-			thead?.tagName === "THEAD"
-				? (thead.children[0]?.children[index] as HTMLTableCellElement)?.getBoundingClientRect().width
-				: 0;
-
+		const fallbackWidth = thead?.tagName === "THEAD"
+			? thead.children[0]?.children[index]?.getBoundingClientRect().width || 0
+			: 0;
 		const rawWidth = styleWidth || rectWidth || fallbackWidth || 0;
-
 		return Math.ceil(rawWidth);
 	});
 
-	const col = map.colCount(Cell.pos - start) + Cell.nodeAfter.attrs.colspan - 1;
-	const tr = view.state.tr;
-	for (let row = 0; row < map.height; row++) {
-		for (let cell = 0; cell < map.width; ) {
-			const mapIndex = row * map.width + cell;
+	domWidths[col] = width;
 
+	for (let row = 0; row < map.height; row++) {
+		for (let cellIdx = 0; cellIdx < map.width;) {
+			const mapIndex = row * map.width + cellIdx;
 			const pos = map.map[mapIndex];
 			const attrs = table.nodeAt(pos).attrs as CellAttrs;
-			const index = attrs.colspan === 1 ? 0 : cell - map.colCount(pos);
+			const index = attrs.colspan === 1 ? 0 : cellIdx - map.colCount(pos);
 
-			const colwidth = attrs.colwidth ? attrs.colwidth.slice() : zeroes(attrs.colspan);
+			const colwidth = attrs.colwidth ? [...attrs.colwidth] : new Array(attrs.colspan).fill(0);
+			let columnWasResized = false;
+
 			for (let i = 0; i < attrs.colspan; i++) {
-				const isEditingCol = cell + i === col;
-				colwidth[i] = isEditingCol ? width : widths[cell - index + i];
+				const colIndex = cellIdx - index + i;
+				if (colIndex === col) {
+					colwidth[i] = domWidths[colIndex] || 0;
+					columnWasResized = true;
+				} else if (!colwidth[i]) {
+					colwidth[i] = domWidths[colIndex] || 0;
+				}
 			}
-			cell += attrs.colspan;
-			tr.setNodeMarkup(start + pos, null, { ...attrs, colwidth });
+
+			cellIdx += attrs.colspan;
+
+			tr.setNodeMarkup(start + pos, null, {
+				...attrs,
+				colwidth,
+				isCustomWidth: columnWasResized ? true : (attrs.isCustomWidth ?? false),
+			});
 		}
 	}
+
 	if (tr.docChanged) view.dispatch(tr);
 }
 
-function displayColumnWidth(view: EditorView, cell: number, width: number): void {
+function displayColumnWidth(view: EditorView,
+	cell: number,
+	width: number): void {
 	const Cell = view.state.doc.resolve(cell);
 	const table = Cell.node(-1),
 		start = Cell.start(-1);
@@ -273,7 +309,8 @@ function zeroes(n: number): 0[] {
 	return Array(n).fill(0);
 }
 
-function handleDecorations(state: EditorState, cell: number): DecorationSet {
+function handleDecorations(state: EditorState,
+	cell: number): DecorationSet {
 	const decorations = [];
 	const Cell = state.doc.resolve(cell);
 	const table = Cell.node(-1);
