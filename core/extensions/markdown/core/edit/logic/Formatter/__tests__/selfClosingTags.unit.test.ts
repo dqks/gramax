@@ -1,5 +1,3 @@
-// core/extensions/markdown/core/edit/logic/Formatter/__tests__/selfClosingTags.test.ts
-
 import getNodeFormatters from "@ext/markdown/core/edit/logic/Formatter/Formatters/getNodeFormatters";
 import { ProsemirrorMarkdownSerializer } from "@ext/markdown/core/edit/logic/Prosemirror";
 import getMarkFormatters from "@ext/markdown/core/edit/logic/Formatter/Formatters/getMarkFormatters";
@@ -19,8 +17,6 @@ const serializeDoc = async (content: JSONContent[]) => {
 	);
 	return await serializer.serialize(doc, {}, "");
 };
-
-// --- Хелперы ---
 
 const icon = (code: string): JSONContent => ({
 	type: "icon",
@@ -50,10 +46,6 @@ const table = (rows: JSONContent[]): JSONContent => ({
 	attrs: { header: "row" },
 	content: rows,
 });
-
-// ============================================================
-// Тесты: Самозакрывающиеся теги
-// ============================================================
 
 describe("XML self-closing tags", () => {
 	test("icon renders as self-closing with space before />", async () => {

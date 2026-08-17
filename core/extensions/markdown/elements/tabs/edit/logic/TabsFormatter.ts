@@ -5,13 +5,34 @@ import type TabAttrs from "@ext/markdown/elements/tabs/model/TabAttrs";
 const TabsFormatter =
 	(formatter: FormatterType): NodeSerializerSpec =>
 	async (state, node) => {
+		// node.attrs.childAttrs.map((attrs: TabAttrs, idx: number) => {
+		// 	// biome-ignore lint/suspicious/noExplicitAny: i know it's a hack
+		// 	(node.child(idx).attrs as any) = { ...attrs, property: node.child(idx).attrs.property };
+		// });
+		// state.write(`${formatter.openTag("tabs")}\n\n`);
+		// await state.renderContent(node);
+		// state.write(formatter.closeTag("tabs"));
+		// state.closeBlock(node);
 		node.attrs.childAttrs.map((attrs: TabAttrs, idx: number) => {
 			// biome-ignore lint/suspicious/noExplicitAny: i know it's a hack
 			(node.child(idx).attrs as any) = { ...attrs, property: node.child(idx).attrs.property };
 		});
-		state.write(`${formatter.openTag("tabs")}\n\n`);
-		await state.renderContent(node);
-		state.write(formatter.closeTag("tabs"));
+		const openTag = formatter.openTag('tabs');
+
+		if (node.content.size > 0) {
+			state.write(openTag + '\n');
+
+			const oldDelim = state.delim;
+			state.delim = '  ' + state.delim;
+
+			await state.renderContent(node);
+
+			state.delim = oldDelim;
+			state.write('</tabs>', 0);
+		} else {
+			state.write(openTag + '</tabs>', 0);
+		}
+
 		state.closeBlock(node);
 	};
 

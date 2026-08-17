@@ -18,44 +18,33 @@ const serializeDoc = async (content: JSONContent[]) => {
 	return await serializer.serialize(doc, {}, "");
 };
 
-// --- Хелперы для simple table ---
-
-/** Простая ячейка (inline контент напрямую, без paragraph) */
 const simpleCell = (text: string, attrs: Record<string, any> = {}): JSONContent => ({
 	type: "tableCell_simple",
 	attrs: { colspan: 1, rowspan: 1, colwidth: null, align: null, ...attrs },
 	content: text ? [{ type: "text", text }] : [],
 });
 
-/** Заголовочная ячейка */
 const headerCell = (text: string, attrs: Record<string, any> = {}): JSONContent => ({
 	type: "tableHeader_simple",
 	attrs: { colspan: 1, rowspan: 1, colwidth: null, align: null, ...attrs },
 	content: text ? [{ type: "text", text }] : [],
 });
 
-/** Строка заголовка */
 const headerRow = (cells: JSONContent[]): JSONContent => ({
 	type: "tableHeaderRow_simple",
 	content: cells,
 });
 
-/** Строка тела таблицы */
 const bodyRow = (cells: JSONContent[]): JSONContent => ({
 	type: "tableBodyRow_simple",
 	content: cells,
 });
 
-/** Простая Markdown-таблица */
 const mdTable = (header: JSONContent, body: JSONContent[]): JSONContent => ({
 	type: "table_simple",
 	attrs: { header: "row" },
 	content: [header, ...body],
 });
-
-// ============================================================
-// Тесты: Стандартные Markdown-таблицы
-// ============================================================
 
 describe("Standard Markdown tables", () => {
 	test("simple table stays in pipe format", async () => {

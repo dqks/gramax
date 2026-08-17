@@ -53,6 +53,7 @@ import {
 import MdParser from "./MdParser/MdParser";
 import type ParserContext from "./ParserContext/ParserContext";
 import preTransformTokens from "./Transformer/preTransformTokens";
+import { dedentContainerContent, getContainerTags } from "@ext/markdown/core/Parser/dedentContainerContent";
 
 const katexPlugin = import("@traptitech/markdown-it-katex");
 let resolvedKatexPlugin: Awaited<typeof katexPlugin>["default"] = null;
@@ -182,7 +183,9 @@ export default class MarkdownParser {
 	private async _getTokens(content: string, schemes?: Schemes, context?: PrivateParserContext): Promise<Token[]> {
 		const mdParser = new MdParser({ tags: schemes.tags });
 		const parseDoc = mdParser.preParse(content);
-		const tokens = this._getTokenizer(schemes.tags).tokenize(parseDoc);
+		// const tokens = this._getTokenizer(schemes.tags).tokenize(parseDoc);
+		const dedentedDoc = dedentContainerContent(parseDoc, getContainerTags(schemes?.tags ?? {}));
+		const tokens = this._getTokenizer(schemes.tags).tokenize(dedentedDoc);
 		return await preTransformTokens({ tokens, context, parser: this });
 	}
 

@@ -3,6 +3,6 @@ export const orderedList = {
 	content: "listItem+",
 	attrs: {
 		order: { default: 1 },
-		tight: { default: false },
+		tight: { default: true },
 	},
 };
