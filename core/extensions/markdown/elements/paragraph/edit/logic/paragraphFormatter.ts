@@ -3,7 +3,11 @@ import type { NodeSerializerSpec } from "@ext/markdown/core/edit/logic/Prosemirr
 const paragraphFormatter: NodeSerializerSpec = async (state, node) => {
 	if (node.content?.size) await state.renderInline(node);
 	else state.write("\n");
-	state.closeBlock(node);
+	if (state.inTightList) {
+		state.ensureNewLine();
+	} else {
+		state.closeBlock(node);
+	}
 };
 
 export default paragraphFormatter;

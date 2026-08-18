@@ -49,8 +49,6 @@ const table = (rows: JSONContent[]): JSONContent => ({
 });
 
 describe("Table resize attributes", () => {
-	// --- Атрибут {width=Npx} в заголовке ---
-
 	test("colwidth with isCustomWidth renders as {width=Npx} attribute", async () => {
 		const result = await serializeDoc([
 			table([
@@ -68,8 +66,6 @@ describe("Table resize attributes", () => {
 		expect(result).toContain("| Комментарий |");
 		expect(result).not.toMatch(/Комментарий \{width=/);
 	});
-
-	// --- Таблица остаётся в Markdown-формате ---
 
 	test("table with colwidth stays in pipe format (NOT XML)", async () => {
 		const result = await serializeDoc([
@@ -90,8 +86,6 @@ describe("Table resize attributes", () => {
 		expect(result).toContain("|---");
 	});
 
-	// --- Атрибут записывается в конце содержимого ---
-
 	test("width attribute is placed at the end of header cell content", async () => {
 		const result = await serializeDoc([
 			table([
@@ -103,8 +97,6 @@ describe("Table resize attributes", () => {
 		expect(result).toMatch(/Название \{width=200px\} \|/);
 		expect(result).not.toMatch(/\{width=200px\} Название/);
 	});
-
-	// --- Автоматическая ширина не записывается ---
 
 	test("automatic width (no colwidth) does not add {width=auto} attribute", async () => {
 		const result = await serializeDoc([
@@ -121,8 +113,6 @@ describe("Table resize attributes", () => {
 		expect(result).not.toMatch(/Без ширины \{width=/);
 		expect(result).toContain("| С шириной {width=150px} |");
 	});
-
-	// --- Множественные атрибуты ---
 
 	test("multiple attributes are separated by space, not comma", async () => {
 		const result = await serializeDoc([
@@ -142,8 +132,6 @@ describe("Table resize attributes", () => {
 			}
 		}
 	});
-
-	// --- Изменение ширины меняет только заголовок ---
 
 	test("changing column width only affects the header row", async () => {
 		const result = await serializeDoc([
@@ -165,8 +153,6 @@ describe("Table resize attributes", () => {
 		expect(lines[3]).not.toContain("{width=");
 	});
 
-	// --- Идемпотентность ---
-
 	test("table with colwidth is idempotent", async () => {
 		const content = [
 			table([
@@ -182,8 +168,6 @@ describe("Table resize attributes", () => {
 		const second = await serializeDoc(content);
 		expect(second).toBe(first);
 	});
-
-	// --- Пример из требования ---
 
 	test("example from requirements", async () => {
 		const result = await serializeDoc([
@@ -206,8 +190,6 @@ describe("Table resize attributes", () => {
 		expect(result).toContain("|---");
 	});
 
-	// --- Выравнивание сохраняется вместе с шириной ---
-
 	// test("alignment markers are preserved with width attributes", async () => {
 	// 	const result = await serializeDoc([
 	// 		table([
@@ -227,8 +209,6 @@ describe("Table resize attributes", () => {
 	// 	expect(result).toContain(":---:");
 	// 	expect(result).toContain("---:");
 	// });
-
-	// --- Флаг isCustomWidth ---
 
 	test("colwidth without isCustomWidth=true does NOT add {width=Npx} attribute", async () => {
 		const result = await serializeDoc([

@@ -1,11 +1,10 @@
-// core/extensions/markdown/core/edit/logic/Formatter/__tests__/nestedComponentIndent.unit.test.ts
-
 import getNodeFormatters from "@ext/markdown/core/edit/logic/Formatter/Formatters/getNodeFormatters";
 import { ProsemirrorMarkdownSerializer } from "@ext/markdown/core/edit/logic/Prosemirror";
 import getMarkFormatters from "@ext/markdown/core/edit/logic/Formatter/Formatters/getMarkFormatters";
 import { getSchema } from "@ext/markdown/core/edit/logic/Prosemirror/schema";
 import type { JSONContent } from "@tiptap/core";
 import { Node } from "@tiptap/pm/model";
+import { test } from "gray-matter";
 
 const xmlContext = {
     getProp: (name: string) => (name === "syntax" ? "XML" : undefined),
@@ -19,8 +18,6 @@ const serializeDoc = async (content: JSONContent[]) => {
     );
     return await serializer.serialize(doc, {}, "");
 };
-
-// --- Хелперы ---
 
 const para = (text: string): JSONContent => ({
     type: "paragraph",
@@ -37,10 +34,6 @@ const tabs = (...tabNodes: JSONContent[]): JSONContent => ({
     type: "tabs",
     content: tabNodes,
 });
-
-// ============================================================
-// Тесты: Отступы во вложенных компонентах
-// ============================================================
 
 describe("Nested component indentation", () => {
     test("structural child tags get 2-space indent per level", async () => {
@@ -105,8 +98,6 @@ describe("Nested component indentation", () => {
         expect(secondPara).toMatch(/^ {4}Второй абзац\.$/);
     });
 
-    // --- Container-aware dedent: относительные отступы списков ---
-
     test("list inside tab preserves relative indentation", async () => {
         const result = await serializeDoc([
             tabs(tab("Вкладка", [
@@ -126,8 +117,6 @@ describe("Nested component indentation", () => {
 
         expect(item1).toBeDefined();
         expect(item2).toBeDefined();
-        // ИСПРАВЛЕНО: markdown-сериализатор ставит "- " (дефис + два пробела)
-        // для выравнивания многострочного текста
         expect(item1).toMatch(/^ {4}-  пункт 1$/);
         expect(item2).toMatch(/^ {4}-  пункт 2$/);
     });
@@ -165,12 +154,8 @@ describe("Nested component indentation", () => {
         expect(child).toBeDefined();
         const parentIndent = parent?.match(/^ */)?.[0].length ?? 0;
         const childIndent = child?.match(/^ */)?.[0].length ?? 0;
-        // ИСПРАВЛЕНО: markdown-стандарт использует 3 пробела для вложенных списков
-        // (чтобы текст под маркером был выровнен правильно)
         expect(childIndent - parentIndent).toBe(3);
     });
-
-    // --- Container-aware dedent: блоки кода ---
 
     test("code block inside tab preserves its content without extra indent", async () => {
         const result = await serializeDoc([
@@ -191,16 +176,12 @@ describe("Nested component indentation", () => {
         expect(codeLine).toBeDefined();
     });
 
-    // --- Идемпотентность ---
-
     test("nested component output is idempotent", async () => {
         const content = [tabs(tab("Вкладка", [para("Текст.")]))];
         const first = await serializeDoc(content);
         const second = await serializeDoc(content);
         expect(second).toBe(first);
     });
-
-    // --- Пример из требования ---
 
     test("example from requirements", async () => {
         const result = await serializeDoc([
