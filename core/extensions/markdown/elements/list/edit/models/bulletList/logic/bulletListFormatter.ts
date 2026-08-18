@@ -1,10 +1,12 @@
 import type { NodeSerializerSpec } from "@ext/markdown/core/edit/logic/Prosemirror/to_markdown";
 
 const bulletList: NodeSerializerSpec = async (state, node) => {
+	const indent = node.attrs.tight ? "  " : "   ";
+	
 	await state.renderList(
 		node,
-		() => "   ",
-		() => (node.attrs.bullet || "-") + "  ",
+		() => indent,
+		() => (node.attrs.bullet || "-") + " ",
 	);
 };
 
