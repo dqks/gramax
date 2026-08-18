@@ -66,7 +66,9 @@ class MarkdownParseState {
 		for (let i = 0; i < toks.length; i++) {
 			const tok = toks[i];
 			const handler: Handler = this.tokenHandlers[tok.type];
-			if (!handler) throw new Error("Token type `" + tok.type + "` not supported by Markdown parser");
+			if (!handler) {
+				throw new Error("Token type `" + tok.type + "` not supported by Markdown parser");
+			}
 			await handler(this, tok, toks, i);
 		}
 	}

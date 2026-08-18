@@ -133,5 +133,6 @@ export const getTokens = (context?: PrivateParserContext): { [name: string]: Par
 		comment_old,
 	};
 
-	return tokensModifier(tokens, context);
+	const modified = tokensModifier(tokens, context); 
+	return modified
 };
